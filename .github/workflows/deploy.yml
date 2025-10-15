@@ -1,33 +1,57 @@
 name: Deployment
+
 on:
   push:
     branches:
-      - master
+      - main
       - dev
+
+# Workflow-level environment variables
+env:
+  MONGODB_DB_NAME: env-demo
+
 jobs:
   test:
     environment: testing
     runs-on: ubuntu-latest
+
+    # Job-level environment variables
+    env:
+      MONGODB_CLUSTER_ADDRESS: cluster0.ecindcr.mongodb.net
+      MONGODB_USERNAME: demoUser
+      MONGODB_PASSWORD: demoPass123
+      PORT: 8080
+
     steps:
       - name: Get Code
         uses: actions/checkout@v4
+
       - name: Cache dependencies
         uses: actions/cache@v4
         with:
           path: ~/.npm
           key: npm-deps-${{ hashFiles('**/package-lock.json') }}
+
       - name: Install dependencies
         run: npm ci
-      - name: Run server
-        run: npm start & npx wait-on http://127.0.0.1:XYZ
+
+      - name: Start server
+        run: |
+          echo "Starting server on port $PORT"
+          npm start & npx wait-on http://127.0.0.1:$PORT
+
       - name: Run tests
         run: npm test
+
       - name: Output information
-        run: echo "..."
+        run: |
+          echo "Database: $MONGODB_DB_NAME"
+          echo "Cluster: $MONGODB_CLUSTER_ADDRESS"
+          echo "User: $MONGODB_USERNAME"
+
   deploy:
     needs: test
     runs-on: ubuntu-latest
     steps:
       - name: Output information
-        run: |        
-          echo "..."
+        run: echo "Ready to deploy"
