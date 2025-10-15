@@ -3,10 +3,9 @@ name: Deployment
 on:
   push:
     branches:
-      - master
+      - main
       - dev
 
-# Workflow-level environment variables
 env:
   MONGODB_DB_NAME: env-demo
 
@@ -15,11 +14,10 @@ jobs:
     environment: testing
     runs-on: ubuntu-latest
 
-    # Job-level environment variables
     env:
-      MONGODB_CLUSTER_ADDRESS: cluster0.ecindcr.mongodb.net
-      MONGODB_USERNAME: demoUser
-      MONGODB_PASSWORD: demoPass123
+      MONGODB_CLUSTER_ADDRESS: ${{ secrets.MONGODB_CLUSTER_ADDRESS }}
+      MONGODB_USERNAME: ${{ secrets.MONGODB_USERNAME }}
+      MONGODB_PASSWORD: ${{ secrets.MONGODB_PASSWORD }}
       PORT: 8080
 
     steps:
@@ -43,16 +41,8 @@ jobs:
       - name: Run tests
         run: npm test
 
-      - name: Output information
+      - name: Output info
         run: |
           echo "Database: $MONGODB_DB_NAME"
           echo "Cluster: $MONGODB_CLUSTER_ADDRESS"
           echo "User: $MONGODB_USERNAME"
-
-
-  deploy:
-    needs: test
-    runs-on: ubuntu-latest
-    steps:
-      - name: Output information
-        run: echo "Ready to deploy"
